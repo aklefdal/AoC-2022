@@ -1,48 +1,108 @@
 open System.IO
 
-let score1 =
-    function
-    | "A X" -> 1 + 3 // rock - rock - draw
-    | "B X" -> 1 + 0 // paper - rock - loose
-    | "C X" -> 1 + 6 // scissor - rock - win
-    | "A Y" -> 2 + 6 // rock - paper - win
-    | "B Y" -> 2 + 3 // paper - paper - draw
-    | "C Y" -> 2 + 0 // scissor - paper - loose
-    | "A Z" -> 3 + 0 // rock - scissor - loose
-    | "B Z" -> 3 + 6 // paper - scissor - win
-    | "C Z" -> 3 + 3 // scissor - scissor - draw
-    | _ -> failwith "Ouch"
-
-// Input
-let inputFilename = "day-02-input.txt"
-
-let svar1 = 
-    inputFilename 
-    |> File.ReadAllLines
-    |> Array.map score1
-    |> Array.sum
-
-type play =
+type Play =
     | Rock
     | Paper
     | Scissor
 
-let game2 =
-    function
-    | "A X" -> 1 + 3 // rock - rock - draw
-    | "B X" -> 1 + 0 // paper - rock - loose
-    | "C X" -> 1 + 6 // scissor - rock - win
-    | "A Y" -> 2 + 6 // rock - paper - win
-    | "B Y" -> 2 + 3 // paper - paper - draw
-    | "C Y" -> 2 + 0 // scissor - paper - loose
-    | "A Z" -> 3 + 0 // rock - scissor - loose
-    | "B Z" -> 3 + 6 // paper - scissor - win
-    | "C Z" -> 3 + 3 // scissor - scissor - draw
-    | _ -> failwith "Ouch"
+type Result =
+    | Loose
+    | Draw
+    | Win
 
+let game1 (line: string) =
+    let opponentPlay =
+        match line[0] with
+        | 'A' -> Rock
+        | 'B' -> Paper
+        | 'C' -> Scissor
+        | _ -> failwith "Ouch"
 
+    let myPlay =
+        match line[2] with
+        | 'X' -> Rock
+        | 'Y' -> Paper
+        | 'Z' -> Scissor
+        | _ -> failwith "Ouch"
 
+    opponentPlay, myPlay
 
-let svar2 = 
-    inputFilename 
+let score ((me, result): Play * Result) =
+    let scorePlayed =
+        match me with
+        | Rock -> 1
+        | Paper -> 2
+        | Scissor -> 3
+
+    let scoreResult =
+        match result with
+        | Loose -> 0
+        | Draw -> 3
+        | Win -> 6
+
+    scorePlayed + scoreResult
+
+let result1 (opponentPlay, myPlay) =
+    let result =
+        match opponentPlay, myPlay with
+        | Rock, Rock -> Draw
+        | Rock, Paper -> Win
+        | Rock, Scissor -> Loose
+        | Paper, Rock -> Loose
+        | Paper, Paper -> Draw
+        | Paper, Scissor -> Win
+        | Scissor, Rock -> Win
+        | Scissor, Paper -> Loose
+        | Scissor, Scissor -> Draw
+
+    myPlay, result
+// Input
+let inputFilename = "day-02-input.txt"
+
+let svar1 =
+    inputFilename
     |> File.ReadAllLines
+    |> Array.map game1
+    |> Array.map result1
+    |> Array.map score
+    |> Array.sum
+
+let game2 (line: string) =
+    let opponentPlay =
+        match line[0] with
+        | 'A' -> Rock
+        | 'B' -> Paper
+        | 'C' -> Scissor
+        | _ -> failwith "Ouch"
+
+    let result =
+        match line[2] with
+        | 'X' -> Loose
+        | 'Y' -> Draw
+        | 'Z' -> Win
+        | _ -> failwith "Ouch"
+
+    opponentPlay, result
+
+let myPlay ((op, st): Play * Result) =
+    let me =
+        match op, st with
+        | Rock, Loose -> Scissor
+        | Paper, Loose -> Rock
+        | Scissor, Loose -> Paper
+        | Rock, Draw -> Rock
+        | Paper, Draw -> Paper
+        | Scissor, Draw -> Scissor
+        | Rock, Win -> Paper
+        | Paper, Win -> Scissor
+        | Scissor, Win -> Rock
+
+    me, st
+
+let svar2 =
+    inputFilename
+    |> File.ReadAllLines
+    |> Array.map game2
+    |> Array.map myPlay
+    |> Array.map score
+    |> Array.sum
